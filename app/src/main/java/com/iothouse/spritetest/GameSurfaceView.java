@@ -19,6 +19,8 @@ import java.io.InputStream;
 
 public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
     private String TAG = "GameSurfaceView";
+    public static final int SCREEN_WIDTH = 500;
+    public static final  int SCREEN_HEIGHT = 660;;
 
     public Bitmap mBitmapResource = null;
     public Bitmap[][] mBitmaps = null;
@@ -29,6 +31,11 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     public int spriteWidth = 0;
     public int spriteHeight = 0;
+
+    //动画帧对象
+    public FrameAnimation mFrameAnimation;
+    //精灵
+    public Sprite mSprite;
 
     public GameSurfaceView(Context context) {
         super(context);
@@ -44,6 +51,10 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         @SuppressLint("ResourceType") InputStream is = context.getResources().openRawResource(R.drawable.sprite);
         mBitmapResource = BitmapFactory.decodeStream(is, null, opt);
         mBitmaps = generateBitmapArray(mBitmapResource, 4, 4);
+
+        mFrameAnimation = new FrameAnimation(mBitmaps);
+        mSprite = new Sprite(mFrameAnimation,0,0,spriteWidth,spriteHeight,0.1f);
+
         mPaint = new Paint();
         mPaint.setColor(Color.GREEN);// 画笔为绿色
         mPaint.setTextSize(40);
@@ -120,15 +131,18 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
                     location_step = 0;
                 }
                 location_x = -(330*location_step/total_step);
+                mSprite.updatePosition(30);
+                mSprite.setDirection();
 //                location_y = -(250*location_step/total_step);
 
                 canvas = mSurfaceHolder.lockCanvas();
                 canvas.drawColor(Color.BLACK);
 //                canvas.drawBitmap(mBitmapResource,location_x,location_y,null);
-                canvas.drawBitmap(mBitmaps[0][location_step], 0,0,null);
-                canvas.drawBitmap(mBitmaps[1][location_step], 0,300,null);
-                canvas.drawBitmap(mBitmaps[2][location_step], 300,0,null);
-                canvas.drawBitmap(mBitmaps[3][location_step], 300,300,null);
+//                canvas.drawBitmap(mBitmaps[0][location_step], 0,0,null);
+//                canvas.drawBitmap(mBitmaps[1][location_step], 0,300,null);
+//                canvas.drawBitmap(mBitmaps[2][location_step], 300,0,null);
+//                canvas.drawBitmap(mBitmaps[3][location_step], 300,300,null);
+                mSprite.draw(canvas);
                 mSurfaceHolder.unlockCanvasAndPost(canvas);
 
                 try {
