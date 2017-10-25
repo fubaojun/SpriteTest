@@ -8,14 +8,28 @@ import android.graphics.Bitmap;
 
 public class FrameAnimation {
 
+    private static final long FRAMEDURATION = 200;
+    public static final int TOTAL_STEP = 4;
+
     /**动画显示的需要的资源 */
     private Bitmap[][] mBitmaps;
+    private long mTickTime = 0;
+
+    //精灵当前行走步数
+    public int step;
 
     public FrameAnimation(Bitmap[][] bitmaps) {
         this.mBitmaps = bitmaps;
     }
 
-    public Bitmap nextFrame(int direction, int step) {
+    public Bitmap nextFrame(int direction, long deltaTime) {
+        mTickTime += deltaTime;
+        if (mTickTime >= FRAMEDURATION){
+            mTickTime = 0;
+            if (++step == TOTAL_STEP) {
+                step = 0;
+            }
+        }
         return mBitmaps[direction][step];
 
 //        if (null == lastBitmapTime) {

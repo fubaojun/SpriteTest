@@ -19,8 +19,10 @@ import java.io.InputStream;
 
 public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callback {
     private String TAG = "GameSurfaceView";
-    public static final int SCREEN_WIDTH = 500;
-    public static final  int SCREEN_HEIGHT = 660;;
+    public static final int SCREEN_WIDTH = 250;
+    public static final  int SCREEN_HEIGHT = 330;;
+    //最大帧数 (1000 / 30)
+    private static final int DRAW_INTERVAL = 33;//ms
 
     public Bitmap mBitmapResource = null;
     public Bitmap[][] mBitmaps = null;
@@ -53,7 +55,7 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         mBitmaps = generateBitmapArray(mBitmapResource, 4, 4);
 
         mFrameAnimation = new FrameAnimation(mBitmaps);
-        mSprite = new Sprite(mFrameAnimation,0,0,spriteWidth,spriteHeight,0.1f);
+        mSprite = new Sprite(mFrameAnimation,0,0,spriteWidth,spriteHeight,0.02f);
 
         mPaint = new Paint();
         mPaint.setColor(Color.GREEN);// 画笔为绿色
@@ -83,15 +85,8 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         Canvas canvas = holder.lockCanvas();
         canvas.drawBitmap(mBitmapResource,0,0,null);
         Log.e(TAG,"-- surfaceCreated -drawBitmap-");
-        holder.setFixedSize(500,660);//这里会把Surface 缩放到 SurfaceView 上显示
+        holder.setFixedSize(SCREEN_WIDTH,SCREEN_HEIGHT);//这里会把Surface 缩放到 SurfaceView 上显示
         Log.e(TAG,"-- surfaceCreated -setFixedSize-");
-        float x = 500;
-        float y = 660;
-
-        canvas.drawLine(0,0,x,y,mPaint);
-        canvas.drawLine(0,y,x,y,mPaint);
-        canvas.drawLine(x,0,x,y,mPaint);
-        canvas.drawText(""+x+","+y,120,120,mPaint);
         holder.unlockCanvasAndPost(canvas);
 
         if(null == mDrawThread){
@@ -114,10 +109,6 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
 
     private class DrawThread extends Thread {
         public boolean isRunning = false;
-        public float location_x = 0;
-        public float location_y = 0;
-        public int location_step = 0;
-        public static final int total_step = 4;
 
         public DrawThread() {
             this.isRunning = true;
@@ -126,29 +117,29 @@ public class GameSurfaceView extends SurfaceView implements SurfaceHolder.Callba
         @Override
         public void run() {
             Canvas canvas = null;
+            long tickTime = 0;
+            long deltaTime = 0;
             while (isRunning){
-                if (++location_step == total_step) {
-                    location_step = 0;
-                }
-                location_x = -(330*location_step/total_step);
-                mSprite.updatePosition(30);
+                tickTime = System.currentTimeMillis();
+                mSprite.updatePosition(deltaTime);
                 mSprite.setDirection();
-//                location_y = -(250*location_step/total_step);
 
                 canvas = mSurfaceHolder.lockCanvas();
-                canvas.drawColor(Color.BLACK);
-//                canvas.drawBitmap(mBitmapResource,location_x,location_y,null);
-//                canvas.drawBitmap(mBitmaps[0][location_step], 0,0,null);
-//                canvas.drawBitmap(mBitmaps[1][location_step], 0,300,null);
-//                canvas.drawBitmap(mBitmaps[2][location_step], 300,0,null);
-//                canvas.drawBitmap(mBitmaps[3][location_step], 300,300,null);
-                mSprite.draw(canvas);
+                canvas.drawColor(Color.BLACK);//消隐
+//                mSurfaceHolder.unlockCanvasAndPost(canvas);
+//
+//                canvas = mSurfaceHolder.lockCanvas();
+                mSprite.draw(canvas, deltaTime);
                 mSurfaceHolder.unlockCanvasAndPost(canvas);
-
-                try {
-                    Thread.sleep(150);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                deltaTime = System.currentTimeMillis() - tickTime;
+                if (deltaTime < DRAW_INTERVAL)
+                {
+                    try {
+                        Thread.sleep(DRAW_INTERVAL - deltaTime);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    deltaTime = DRAW_INTERVAL; //计算刷图时精灵的位置用
                 }
             }
         }

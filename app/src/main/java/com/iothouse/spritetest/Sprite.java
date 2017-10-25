@@ -13,8 +13,6 @@ public class Sprite {
     public static final int RIGHT = 2;
     public static final int UP = 3;
 
-    public static final int TOTAL_STEP = 4;
-
     public float mPositionX;
     public float mPositionY;
     public int mWidth;
@@ -24,8 +22,7 @@ public class Sprite {
     public float speed;
     //精灵当前行走方向
     public int direction;
-    //精灵当前行走步数
-    public int step;
+
     //动画帧对象
     public FrameAnimation mFrameAnimation;
 
@@ -86,11 +83,9 @@ public class Sprite {
 
     }
 
-    public void draw(Canvas canvas) {
-        if (++step == TOTAL_STEP) {
-            step = 0;
-        }
-        Bitmap bitmap = mFrameAnimation.nextFrame(direction, step);
+    public void draw(Canvas canvas,long deltaTime) {
+
+        Bitmap bitmap = mFrameAnimation.nextFrame(direction, deltaTime);
         if (null != bitmap) {
             canvas.drawBitmap(bitmap, mPositionX, mPositionY, null);
         }
